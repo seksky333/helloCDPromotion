@@ -1,5 +1,5 @@
 Parameters:
-  NAME:
+  PipelineID:
     Type: String
 Resources:
   WebsiteBucket:
