@@ -41,6 +41,18 @@ jobs:
             Export OldPipelineID = $(aws cloudformation \
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
             --no-paginate --output text)
+  get_last_deployment_stack_name: #job name
+    docker: # it uses the docker executor
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: get last deployment stack name
+          #echo environment variable
+          command: |
+            Export PreviousStackName = $(aws cloudformation \
+            list-exports --query "Exports[?Name==\`StackName\`].Value" \
+            --no-paginate --output text)
 
   clean_up_old_front_end: #job name
     docker: # it uses the docker executor
@@ -59,6 +71,9 @@ workflows:
           requires:
             - create_and_deploy_front_end
       - get_last_deployment_id:
+          requires:
+            - promote_to_production
+      - get_last_deployment_stack_name:
           requires:
             - promote_to_production
       - clean_up_old_front_end:
