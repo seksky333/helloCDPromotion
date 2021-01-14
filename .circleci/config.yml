@@ -31,7 +31,7 @@ jobs:
 
   get_last_deployment_id: #job name
     docker: # it uses the docker executor
-      - image: circleci/node:13.8.0
+      - image: amazon/aws-cli
     steps:
       - checkout
       - run:
@@ -40,19 +40,7 @@ jobs:
           command: |
             aws cloudformation \
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
-            --no-paginate --output text >> ~/deployment_id.txt
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - deployment_id.txt
-
-  print_last_deployment_id: #job name
-    docker: # it uses the docker executor
-      - image: circleci/node:13.8.0
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run: cat ~/output.txt
+            --no-paginate --output text
 
 workflows:
   # workflow
@@ -65,6 +53,3 @@ workflows:
       - get_last_deployment_id:
           requires:
             - promote_to_production
-      - print_last_deployment_id:
-          requires:
-            - get_last_deployment_id
