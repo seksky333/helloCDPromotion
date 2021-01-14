@@ -38,9 +38,9 @@ jobs:
           name: get last deployment id
           #echo environment variable
           command: |
-            aws cloudformation \
+            Export OldPipelineID = $(aws cloudformation \
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
-            --no-paginate --output text >> deployment_id.txt
+            --no-paginate --output text)
 
   clean_up_old_front_end: #job name
     docker: # it uses the docker executor
