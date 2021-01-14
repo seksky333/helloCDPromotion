@@ -32,6 +32,6 @@ Outputs:
     Export:
       Name: PipelineID
   StackName:
-    Value: !Sub "production-distrov1"
+    Value: !Sub "production-distro"
     Export:
       Name: StackName
