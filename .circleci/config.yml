@@ -2,69 +2,54 @@
 version: 2.1
 
 jobs:
-  create_infrastructure: #job name
+  create_and_deploy_front_end: #job name
     docker: # it uses the docker executor
       - image: amazon/aws-cli
     steps:
       - checkout
       - run:
-          name: Ensure background infrastructure exist
+          name: deploy cloudfront
           #echo environment variable
           command: |
-            aws cloudformation deploy --template-file template.yml --stack-name prod-${CIRCLE_WORKFLOW_ID}
-      - run: return 1
-      - run:
-          name: destroy environment
-          command: |
-            aws cloudformation delete-stack --stack-name prod-${CIRCLE_WORKFLOW_ID}
-          when: on_fail
-      - run: echo ${CIRCLE_WORKFLOW_ID}
+            aws cloudformation deploy \ --template-file bucket.yml \
+            --stack-name "${CIRCLE_WORKFLOW_ID}" \
+            --parameter-overrides PipelineID="${CIRCLE_WORKFLOW_ID}"
+      - run: aws s3 sync . s3://"${CIRCLE_WORKFLOW_ID}" --delete
 
-  configure_infrastructure:
-    docker:
-      - image: python:3.7-alpine3.11
+  promote_to_production: #job name
+    docker: # it uses the docker executor
+      - image: amazon/aws-cli
     steps:
       - checkout
-      - add_ssh_keys:
-          fingerprints: ["54:77:1c:30:84:c7:1b:a8:dd:5e:27:85:b6:87:1e:31"]
       - run:
-          name: Install dependencies
+          name: promote to production
+          #echo environment variable
           command: |
-            apk add --update ansible # install the dependencies needed for your playbook
-      - run:
-          name: Configure server
-          command: |
-            ansible-playbook -i inventory.txt playbook.yml
+            aws cloudformation deploy \
+            --template-file cloudformation.yml \
+            --stack-name cloudfront \
+            --parameter-overrides PipelineID="${CIRCLE_WORKFLOW_ID}"
 
-  smoke_test:
-    docker:
-      - image: alpine:latest
+  get_last_deployment_id: #job name
+    docker: # it uses the docker executor
+      - image: amazon/aws-cli
     steps:
-      - run: apk add --update curl
+      - checkout
       - run:
-          name: smoke test.
+          name: get last deployment id
+          #echo environment variable
           command: |
-            URL="https://blog.udacity.com" 
-            if curl -s --head ${URL} # test if blog.udacity.com exists
-            then
-              return 0
-            else
-              return 1
-            fi
-      - run:
-          name: destroy environment
-          command: |
-            aws cloudformation delete-stack --stack-name prod-${CIRCLE_WORKFLOW_ID}
-          when: on_fail
-
+            aws cloudformation \
+            list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
+            --no-paginate --output text >> deployment_id.txt
 workflows:
   # workflow
   my_workflow:
     jobs:
-      - create_infrastructure
-      # - configure_infrastructure:
-      #     requires:
-      #       - create_infrastructure
-      # - smoke_test:
-      #     requires:
-      #       - configure_infrastructure
+      - create_and_deploy_front_end
+      - promote_to_production:
+          requires:
+            - create_and_deploy_front_end
+      - get_last_deployment_id:
+          requires:
+            - promote_to_production
