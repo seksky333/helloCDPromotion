@@ -31,7 +31,7 @@ jobs:
 
   get_last_deployment_id: #job name
     docker: # it uses the docker executor
-      - image: amazon/aws-cli
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -48,7 +48,7 @@ jobs:
 
   print_last_deployment_id: #job name
     docker: # it uses the docker executor
-      - image: amazon/aws-cli
+      - image: circleci/node:13.8.0
     steps:
       - attach_workspace:
           at: ~/
