@@ -40,7 +40,7 @@ jobs:
           command: |
             aws cloudformation \
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
-            --no-paginate --output text
+            --no-paginate --output text >> deployment_id.txt
 
   clean_up_old_front_end: #job name
     docker: # it uses the docker executor
