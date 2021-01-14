@@ -26,8 +26,12 @@ Resources:
             QueryString: False
           TargetOriginId: webpage
           ViewerProtocolPolicy: allow-all
-# Outputs:
-#   PipelineID:
-#     Value: !Sub ${PipelineID}
-#     Export:
-#       Name: PipelineID
+Outputs:
+  PipelineID:
+    Value: !Sub ${PipelineID}
+    Export:
+      Name: PipelineID
+  StackName:
+    Value: !Sub "production-distrov1"
+    Export:
+      Name: StackName

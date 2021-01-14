@@ -48,7 +48,7 @@ jobs:
     steps:
       - checkout
       - run: aws s3 rm . s3://"${OldPipelineID}" --recursive
-      - run: aws cloudformation delete-stack --stack-name "${PreviousPipelineID}"
+      - run: aws cloudformation delete-stack --stack-name "${PreviousStackName}"
 
 workflows:
   # workflow
