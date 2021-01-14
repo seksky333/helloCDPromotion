@@ -42,6 +42,14 @@ jobs:
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
             --no-paginate --output text
 
+  clean_up_old_front_end: #job name
+    docker: # it uses the docker executor
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: aws s3 rm . s3://"${OldPipelineID}" --recursive
+      - run: aws cloudformation delete-stack --stack-name "$PreviousPipelineID"
+
 workflows:
   # workflow
   my_workflow:
@@ -53,3 +61,6 @@ workflows:
       - get_last_deployment_id:
           requires:
             - promote_to_production
+      - clean_up_old_front_end:
+          requires:
+            - get_last_deployment_id
