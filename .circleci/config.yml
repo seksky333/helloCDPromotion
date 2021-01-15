@@ -66,20 +66,42 @@ jobs:
       - run: aws s3 rm s3://$OldPipelineID --recursive
       - run: aws cloudformation delete-stack --stack-name $PreviousStackName
 
+  save_hello_world_output: #job name
+    docker: # it uses the docker executor
+      - image: amazon/aws-cli
+    steps:
+      - run: echo "hello world" > ~/output.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - output.txt
+
+  print_output_file:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: cat ~/output.txt
+
 workflows:
   # workflow
   my_workflow:
     jobs:
-      - create_and_deploy_front_end
-      - get_last_deployment_id:
+      # - create_and_deploy_front_end
+      # - get_last_deployment_id:
+      #     requires:
+      #       - create_and_deploy_front_end
+      # - get_last_deployment_stack_name:
+      #     requires:
+      #       - get_last_deployment_id
+      # - promote_to_production:
+      #     requires:
+      #       - get_last_deployment_stack_name
+      # - clean_up_old_front_end:
+      #     requires:
+      #       - promote_to_production
+      - save_hello_world_output
+      - print_output_file:
           requires:
-            - create_and_deploy_front_end
-      - get_last_deployment_stack_name:
-          requires:
-            - get_last_deployment_id
-      - promote_to_production:
-          requires:
-            - get_last_deployment_stack_name
-      - clean_up_old_front_end:
-          requires:
-            - promote_to_production
+            - save_hello_world_output
