@@ -38,9 +38,9 @@ jobs:
           name: get last deployment id
           #echo environment variable
           command: |
-            export OldPipelineID=$(aws cloudformation \
+            aws cloudformation \
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
-            --no-paginate --output text)
+            --no-paginate --output text >> deployment_id.txt
   get_last_deployment_stack_name: #job name
     docker: # it uses the docker executor
       - image: amazon/aws-cli
@@ -50,16 +50,18 @@ jobs:
           name: get last deployment stack name
           #echo environment variable
           command: |
-            export PreviousStackName=$(aws cloudformation \
+            aws cloudformation \
             list-exports --query "Exports[?Name==\`StackName\`].Value" \
-            --no-paginate --output text)
+            --no-paginate --output text >> stack_name.txt
 
   clean_up_old_front_end: #job name
     docker: # it uses the docker executor
       - image: amazon/aws-cli
     steps:
       - checkout
+      - run: export OldPipelineID=$(cat deployment_id.txt)
       - run: echo $OldPipelineID
+      - run: export PreviousStackName=$(cat stack_name.txt)
       - run: echo $PreviousStackName
       - run: aws s3 rm s3://$OldPipelineID --recursive
       - run: aws cloudformation delete-stack --stack-name $PreviousStackName
