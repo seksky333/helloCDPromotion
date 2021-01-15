@@ -31,7 +31,7 @@ jobs:
 
   get_last_deployment_id: #job name
     docker: # it uses the docker executor
-      - image: amazon/aws-cli
+      - image: circleci/aws-cli
     steps:
       - checkout
       - run:
@@ -92,7 +92,7 @@ workflows:
   # workflow
   my_workflow:
     jobs:
-      - create_and_deploy_front_end
+      # - create_and_deploy_front_end
       # - get_last_deployment_id:
       #     requires:
       #       - create_and_deploy_front_end
@@ -105,7 +105,7 @@ workflows:
       # - clean_up_old_front_end:
       #     requires:
       #       - promote_to_production
-      # - save_hello_world_output
-      # - print_output_file:
-      #     requires:
-      #       - save_hello_world_output
+      - save_hello_world_output
+      - print_output_file:
+          requires:
+            - save_hello_world_output
