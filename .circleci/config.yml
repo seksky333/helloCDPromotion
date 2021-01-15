@@ -59,6 +59,20 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
+      - run:
+          name: get last deployment id
+          #echo environment variable
+          command: |
+            export OldPipelineID=$(aws cloudformation \
+            list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
+            --no-paginate --output text)
+      - run:
+          name: get last deployment stack name
+          #echo environment variable
+          command: |
+            export PreviousStackName=$(aws cloudformation \
+            list-exports --query "Exports[?Name==\`StackName\`].Value" \
+            --no-paginate --output text)
       - run: aws s3 rm . s3://"${OldPipelineID}" --recursive
       - run: aws cloudformation delete-stack --stack-name "${PreviousStackName}"
 
@@ -70,12 +84,12 @@ workflows:
       - promote_to_production:
           requires:
             - create_and_deploy_front_end
-      - get_last_deployment_id:
-          requires:
-            - promote_to_production
-      - get_last_deployment_stack_name:
-          requires:
-            - promote_to_production
+      # - get_last_deployment_id:
+      #     requires:
+      #       - promote_to_production
+      # - get_last_deployment_stack_name:
+      #     requires:
+      #       - promote_to_production
       - clean_up_old_front_end:
           requires:
-            - get_last_deployment_id
+            - promote_to_production
