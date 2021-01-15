@@ -70,7 +70,7 @@ jobs:
     docker: # it uses the docker executor
       - image: amazon/aws-cli
     steps:
-      - run: apt-get install tar
+      - run: yum install tar
       - run: echo "hello world" > ~/output.txt
       - persist_to_workspace:
           root: ~/
@@ -81,7 +81,7 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      - run: apt-get install tar
+      - run: yum install tar
       - attach_workspace:
           at: ~/
       - run: cat ~/output.txt
