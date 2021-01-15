@@ -38,7 +38,7 @@ jobs:
           name: get last deployment id
           #echo environment variable
           command: |
-            export OldPipelineID = $(aws cloudformation \
+            export OldPipelineID=$(aws cloudformation \
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
             --no-paginate --output text)
   get_last_deployment_stack_name: #job name
@@ -50,7 +50,7 @@ jobs:
           name: get last deployment stack name
           #echo environment variable
           command: |
-            export PreviousStackName = $(aws cloudformation \
+            export PreviousStackName=$(aws cloudformation \
             list-exports --query "Exports[?Name==\`StackName\`].Value" \
             --no-paginate --output text)
 
@@ -59,23 +59,9 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - run:
-          name: get last deployment id
-          #echo environment variable
-          command: |
-            export OldPipelineID=$(aws cloudformation \
-            list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
-            --no-paginate --output text)
-      - run:
-          name: get last deployment stack name
-          #echo environment variable
-          command: |
-            export PreviousStackName=$(aws cloudformation \
-            list-exports --query "Exports[?Name==\`StackName\`].Value" \
-            --no-paginate --output text)
       - run: echo $OldPipelineID
       - run: echo $PreviousStackName
-      - run: aws s3 rm s3://"$OldPipelineID" --recursive
+      - run: aws s3 rm s3://$OldPipelineID --recursive
       - run: aws cloudformation delete-stack --stack-name $PreviousStackName
 
 workflows:
@@ -83,15 +69,15 @@ workflows:
   my_workflow:
     jobs:
       - create_and_deploy_front_end
-      - promote_to_production:
+      - get_last_deployment_id:
           requires:
             - create_and_deploy_front_end
-      # - get_last_deployment_id:
-      #     requires:
-      #       - promote_to_production
-      # - get_last_deployment_stack_name:
-      #     requires:
-      #       - promote_to_production
-      # - clean_up_old_front_end:
-      #     requires:
-      #       - promote_to_production
+      - get_last_deployment_stack_name:
+          requires:
+            - get_last_deployment_id
+      - promote_to_production:
+          requires:
+            - get_last_deployment_stack_name
+      - clean_up_old_front_end:
+          requires:
+            - promote_to_production
