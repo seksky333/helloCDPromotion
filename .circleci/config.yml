@@ -5,7 +5,7 @@ version: 2.1
 jobs:
   create_and_deploy_front_end: #job name
     docker: # it uses the docker executor
-      - image: amazon/aws-cli
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -41,6 +41,7 @@ jobs:
             aws cloudformation \
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
             --no-paginate --output text >> deployment_id.txt
+          - run: cat deployment_id.txt
   get_last_deployment_stack_name: #job name
     docker: # it uses the docker executor
       - image: amazon/aws-cli
@@ -53,6 +54,7 @@ jobs:
             aws cloudformation \
             list-exports --query "Exports[?Name==\`StackName\`].Value" \
             --no-paginate --output text >> stack_name.txt
+          - run: cat stack_name.txtz
 
   clean_up_old_front_end: #job name
     docker: # it uses the docker executor
@@ -90,7 +92,7 @@ workflows:
   # workflow
   my_workflow:
     jobs:
-      # - create_and_deploy_front_end
+      - create_and_deploy_front_end
       # - get_last_deployment_id:
       #     requires:
       #       - create_and_deploy_front_end
@@ -103,7 +105,7 @@ workflows:
       # - clean_up_old_front_end:
       #     requires:
       #       - promote_to_production
-      - save_hello_world_output
-      - print_output_file:
-          requires:
-            - save_hello_world_output
+      # - save_hello_world_output
+      # - print_output_file:
+      #     requires:
+      #       - save_hello_world_output
