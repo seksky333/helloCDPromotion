@@ -38,7 +38,7 @@ jobs:
           name: get last deployment id
           #echo environment variable
           command: |
-            Export OldPipelineID = $(aws cloudformation \
+            export OldPipelineID = $(aws cloudformation \
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
             --no-paginate --output text)
   get_last_deployment_stack_name: #job name
@@ -50,7 +50,7 @@ jobs:
           name: get last deployment stack name
           #echo environment variable
           command: |
-            Export PreviousStackName = $(aws cloudformation \
+            export PreviousStackName = $(aws cloudformation \
             list-exports --query "Exports[?Name==\`StackName\`].Value" \
             --no-paginate --output text)
 
