@@ -73,7 +73,9 @@ jobs:
             export PreviousStackName=$(aws cloudformation \
             list-exports --query "Exports[?Name==\`StackName\`].Value" \
             --no-paginate --output text)
-      - run: aws s3 rm . s3://"${OldPipelineID}" --recursive
+      - run: echo $OldPipelineID
+      - run: echo $PreviousStackName
+      - run: aws s3 rm s3://"${OldPipelineID}" --recursive
       - run: aws cloudformation delete-stack --stack-name "${PreviousStackName}"
 
 workflows:
