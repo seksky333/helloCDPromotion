@@ -41,7 +41,7 @@ jobs:
             aws cloudformation \
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
             --no-paginate --output text >> deployment_id.txt
-          - run: cat deployment_id.txt
+      - run: cat deployment_id.txt
   get_last_deployment_stack_name: #job name
     docker: # it uses the docker executor
       - image: amazon/aws-cli
@@ -54,7 +54,7 @@ jobs:
             aws cloudformation \
             list-exports --query "Exports[?Name==\`StackName\`].Value" \
             --no-paginate --output text >> stack_name.txt
-          - run: cat stack_name.txtz
+      - run: cat stack_name.txtz
 
   clean_up_old_front_end: #job name
     docker: # it uses the docker executor
