@@ -72,7 +72,6 @@ jobs:
     docker: # it uses the docker executor
       - image: amazon/aws-cli
     steps:
-      - run: yum install tar
       - run: echo "hello world" > ~/output.txt
       - persist_to_workspace:
           root: ~/
