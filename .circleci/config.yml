@@ -75,8 +75,8 @@ jobs:
             --no-paginate --output text)
       - run: echo $OldPipelineID
       - run: echo $PreviousStackName
-      - run: aws s3 rm s3://"${OldPipelineID}" --recursive
-      - run: aws cloudformation delete-stack --stack-name "${PreviousStackName}"
+      - run: aws s3 rm s3://"$OldPipelineID" --recursive
+      - run: aws cloudformation delete-stack --stack-name $PreviousStackName
 
 workflows:
   # workflow
