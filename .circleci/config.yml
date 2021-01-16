@@ -30,18 +30,6 @@ jobs:
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
             --no-paginate --output text > ~/deployment_id.txt
       - run: cat ~/deployment_id.txt
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - deployment_id.txt
-
-  get_last_deployment_stack_name: #job name
-    docker: # it uses the docker executor
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run: yum install -y tar
-      - run: yum install -y gzip
       - run:
           name: get last deployment stack name
           #echo environment variable
@@ -53,6 +41,7 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
+            - deployment_id.txt
             - stack_name.txt
 
   promote_to_production: #job name
@@ -117,12 +106,9 @@ workflows:
       - get_last_deployment_id:
           requires:
             - create_and_deploy_front_end
-      - get_last_deployment_stack_name:
-          requires:
-            - get_last_deployment_id
       - promote_to_production:
           requires:
-            - get_last_deployment_stack_name
+            - get_last_deployment_id
       - clean_up_old_front_end:
           requires:
             - promote_to_production
