@@ -5,7 +5,7 @@ version: 2.1
 jobs:
   create_and_deploy_front_end: #job name
     docker: # it uses the docker executor
-      - image: circleci/node:13.8.0
+      - image: amazon/aws-cli
     steps:
       - checkout
       - run:
@@ -26,7 +26,7 @@ jobs:
           command: |
             aws cloudformation deploy \
             --template-file cloudfront.yml \
-            --stack-name production-distro \
+            --stack-name production-distrov1 \
             --parameter-overrides PipelineID="chez-${CIRCLE_WORKFLOW_ID:0:7}"
 
   get_last_deployment_id: #job name
@@ -40,7 +40,7 @@ jobs:
           command: |
             aws cloudformation \
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
-            --no-paginate --output text >> deployment_id.txt
+            --no-paginate --output text > deployment_id.txt
       - run: cat deployment_id.txt
   get_last_deployment_stack_name: #job name
     docker: # it uses the docker executor
@@ -53,8 +53,8 @@ jobs:
           command: |
             aws cloudformation \
             list-exports --query "Exports[?Name==\`StackName\`].Value" \
-            --no-paginate --output text >> stack_name.txt
-      - run: cat stack_name.txtz
+            --no-paginate --output text > stack_name.txt
+      - run: cat stack_name.txt
 
   clean_up_old_front_end: #job name
     docker: # it uses the docker executor
@@ -82,7 +82,6 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      - run: yum install tar
       - attach_workspace:
           at: ~/
       - run: cat ~/output.txt
@@ -91,20 +90,20 @@ workflows:
   # workflow
   my_workflow:
     jobs:
-      # - create_and_deploy_front_end
-      # - get_last_deployment_id:
-      #     requires:
-      #       - create_and_deploy_front_end
-      # - get_last_deployment_stack_name:
-      #     requires:
-      #       - get_last_deployment_id
-      # - promote_to_production:
-      #     requires:
-      #       - get_last_deployment_stack_name
-      # - clean_up_old_front_end:
-      #     requires:
-      #       - promote_to_production
-      - save_hello_world_output
-      - print_output_file:
+      - create_and_deploy_front_end
+      - get_last_deployment_id:
           requires:
-            - save_hello_world_output
+            - create_and_deploy_front_end
+      - get_last_deployment_stack_name:
+          requires:
+            - get_last_deployment_id
+      - promote_to_production:
+          requires:
+            - get_last_deployment_stack_name
+      - clean_up_old_front_end:
+          requires:
+            - promote_to_production
+      # - save_hello_world_output
+      # - print_output_file:
+      #     requires:
+      #       - save_hello_world_output
