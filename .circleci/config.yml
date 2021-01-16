@@ -26,7 +26,7 @@ jobs:
           command: |
             aws cloudformation deploy \
             --template-file cloudfront.yml \
-            --stack-name production-distro \
+            --stack-name production-distrov2 \
             --parameter-overrides PipelineID="chez-${CIRCLE_WORKFLOW_ID:0:7}"
 
   get_last_deployment_id: #job name
