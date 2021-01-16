@@ -28,12 +28,12 @@ jobs:
           command: |
             aws cloudformation \
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
-            --no-paginate --output text > deployment_id.txt
+            --no-paginate --output text > ~/deployment_id.txt
       - run: cat deployment_id.txt
       - persist_to_workspace:
           root: ~/
           paths:
-            - ~/deployment_id.txt
+            - deployment_id.txt
 
   get_last_deployment_stack_name: #job name
     docker: # it uses the docker executor
@@ -48,12 +48,12 @@ jobs:
           command: |
             aws cloudformation \
             list-exports --query "Exports[?Name==\`StackName\`].Value" \
-            --no-paginate --output text > stack_name.txt
+            --no-paginate --output text > ~/stack_name.txt
       - run: cat stack_name.txt
       - persist_to_workspace:
           root: ~/
           paths:
-            - ~/stack_name.txt
+            - stack_name.txt
 
   promote_to_production: #job name
     docker: # it uses the docker executor
