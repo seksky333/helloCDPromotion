@@ -15,6 +15,46 @@ jobs:
             aws cloudformation deploy --template-file bucket.yml --stack-name "chez-${CIRCLE_WORKFLOW_ID:0:7}" --parameter-overrides NAME="chez-${CIRCLE_WORKFLOW_ID:0:7}"
       - run: aws s3 sync . s3://"chez-${CIRCLE_WORKFLOW_ID:0:7}" --delete
 
+  get_last_deployment_id: #job name
+    docker: # it uses the docker executor
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: yum install -y tar
+      - run: yum install -y gzip
+      - run:
+          name: get last deployment id
+          #echo environment variable
+          command: |
+            aws cloudformation \
+            list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
+            --no-paginate --output text > deployment_id.txt
+      - run: cat deployment_id.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - deployment_id.txt
+
+  get_last_deployment_stack_name: #job name
+    docker: # it uses the docker executor
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: yum install -y tar
+      - run: yum install -y gzip
+      - run:
+          name: get last deployment stack name
+          #echo environment variable
+          command: |
+            aws cloudformation \
+            list-exports --query "Exports[?Name==\`StackName\`].Value" \
+            --no-paginate --output text > stack_name.txt
+      - run: cat stack_name.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - stack_name.txt
+
   promote_to_production: #job name
     docker: # it uses the docker executor
       - image: amazon/aws-cli
@@ -26,41 +66,18 @@ jobs:
           command: |
             aws cloudformation deploy \
             --template-file cloudfront.yml \
-            --stack-name production-distrov2 \
+            --stack-name production-distro \
             --parameter-overrides PipelineID="chez-${CIRCLE_WORKFLOW_ID:0:7}"
-
-  get_last_deployment_id: #job name
-    docker: # it uses the docker executor
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: get last deployment id
-          #echo environment variable
-          command: |
-            aws cloudformation \
-            list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
-            --no-paginate --output text > deployment_id.txt
-      - run: cat deployment_id.txt
-  get_last_deployment_stack_name: #job name
-    docker: # it uses the docker executor
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: get last deployment stack name
-          #echo environment variable
-          command: |
-            aws cloudformation \
-            list-exports --query "Exports[?Name==\`StackName\`].Value" \
-            --no-paginate --output text > stack_name.txt
-      - run: cat stack_name.txt
 
   clean_up_old_front_end: #job name
     docker: # it uses the docker executor
       - image: amazon/aws-cli
     steps:
       - checkout
+      - attach_workspace:
+          at: ~/
+      - run: cat deployment_id.txt
+      - run: cat stack_name.txt
       - run: export OldPipelineID=$(cat deployment_id.txt)
       - run: echo $OldPipelineID
       - run: export PreviousStackName=$(cat stack_name.txt)
