@@ -98,7 +98,7 @@ jobs:
       - run: cat ~/output.txt
       - run: cp ~/output.txt output.txt
       - run: cat output.txt
-      - run: OldPipelineID=$(cat output.txt)
+      - run: export OldPipelineID=$(cat output.txt)
       - run: echo $OldPipelineID
       - run: echo "$OldPipelineID"
       - run: echo "${OldPipelineID}"
