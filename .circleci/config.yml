@@ -100,9 +100,7 @@ jobs:
           command: |
             echo "hello world" > ~/output.txt
             cat ~/output.txt
-            cp ~/output.txt output.txt
-            cat output.txt
-            export OldPipelineID=$(cat output.txt)
+            OldPipelineID=$(cat ~/output.txt)
             echo $OldPipelineID
             echo "$OldPipelineID"
             echo "${OldPipelineID}"
