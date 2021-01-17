@@ -97,7 +97,8 @@ jobs:
       - run: echo "hello world" > ~/output.txt
       - run: cat ~/output.txt
       - run: export OldPipelineID=$(cat ~/output.txt)
-      - run: echo $OldPipelineID
+      - run: echo "$OldPipelineID"
+      - run: echo "${OldPipelineID}"
 
 workflows:
   # workflow
