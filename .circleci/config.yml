@@ -94,14 +94,18 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      - run: echo "hello world" > ~/output.txt
-      - run: cat ~/output.txt
-      - run: cp ~/output.txt output.txt
-      - run: cat output.txt
-      - run: export OldPipelineID=$(cat output.txt)
-      - run: echo $OldPipelineID
-      - run: echo "$OldPipelineID"
-      - run: echo "${OldPipelineID}"
+      - checkout
+      - run:
+          name: print something
+          command: |
+            echo "hello world" > ~/output.txt
+            cat ~/output.txt
+            cp ~/output.txt output.txt
+            cat output.txt
+            export OldPipelineID=$(cat output.txt)
+            echo $OldPipelineID
+            echo "$OldPipelineID"
+            echo "${OldPipelineID}"
 
 workflows:
   # workflow
