@@ -96,7 +96,9 @@ jobs:
     steps:
       - run: echo "hello world" > ~/output.txt
       - run: cat ~/output.txt
-      - run: OldPipelineID=`cat ~/output.txt`
+      - run: cp ~/output.txt output.txt
+      - run: cat output.txt
+      - run: OldPipelineID=`cat output.txt`
       - run: echo $OldPipelineID
       - run: echo "$OldPipelineID"
       - run: echo "${OldPipelineID}"
