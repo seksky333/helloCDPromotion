@@ -94,25 +94,26 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      - attach_workspace:
-          at: ~/
+      - run: echo "hello world" > ~/output.txt
       - run: cat ~/output.txt
+      - run: OldPipelineID=$(cat ~/output.txt)
+      - run: echo $OldPipelineID
 
 workflows:
   # workflow
   my_workflow:
     jobs:
-      - create_and_deploy_front_end
-      - get_last_deployment_id:
-          requires:
-            - create_and_deploy_front_end
-      - promote_to_production:
-          requires:
-            - get_last_deployment_id
-      - clean_up_old_front_end:
-          requires:
-            - promote_to_production
+      # - create_and_deploy_front_end
+      # - get_last_deployment_id:
+      #     requires:
+      #       - create_and_deploy_front_end
+      # - promote_to_production:
+      #     requires:
+      #       - get_last_deployment_id
+      # - clean_up_old_front_end:
+      #     requires:
+      #       - promote_to_production
       # - save_hello_world_output
-      # - print_output_file:
+      - print_output_file
       #     requires:
       #       - save_hello_world_output
