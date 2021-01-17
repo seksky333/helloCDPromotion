@@ -49,10 +49,6 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - run: yum install -y tar
-      - run: yum install -y gzip
-      - attach_workspace:
-          at: ~/
       - run:
           name: promote to production
           #echo environment variable
@@ -71,14 +67,17 @@ jobs:
       - run: yum install -y gzip
       - attach_workspace:
           at: ~/
-      - run: cat ~/deployment_id.txt
-      - run: cat ~/stack_name.txt
-      - run: OldPipelineID=$(cat ~/deployment_id.txt)
-      - run: echo $OldPipelineID
-      - run: PreviousStackName=$(cat ~/stack_name.txt)
-      - run: echo $PreviousStackName
-      - run: aws s3 rm s3://$OldPipelineID --recursive
-      - run: aws cloudformation delete-stack --stack-name $PreviousStackName
+      - run:
+          name: clean up
+          command: |
+            cat ~/deployment_id.txt
+            cat ~/stack_name.txt
+            OldPipelineID=$(cat ~/deployment_id.txt)
+            echo $OldPipelineID
+            PreviousStackName=$(cat ~/stack_name.txt)
+            echo $PreviousStackName
+            aws s3 rm s3://${OldPipelineID} --recursive
+            aws cloudformation delete-stack --stack-name $PreviousStackName
 
   save_hello_world_output: #job name
     docker: # it uses the docker executor
@@ -109,17 +108,17 @@ workflows:
   # workflow
   my_workflow:
     jobs:
-      # - create_and_deploy_front_end
-      # - get_last_deployment_id:
-      #     requires:
-      #       - create_and_deploy_front_end
-      # - promote_to_production:
-      #     requires:
-      #       - get_last_deployment_id
-      # - clean_up_old_front_end:
-      #     requires:
-      #       - promote_to_production
+      - create_and_deploy_front_end
+      - get_last_deployment_id:
+          requires:
+            - create_and_deploy_front_end
+      - promote_to_production:
+          requires:
+            - get_last_deployment_id
+      - clean_up_old_front_end:
+          requires:
+            - promote_to_production
       # - save_hello_world_output
-      - print_output_file
+      # - print_output_file
       #     requires:
       #       - save_hello_world_output
